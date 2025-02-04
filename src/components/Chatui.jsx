@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   FaRobot,
   FaBrain,
@@ -8,8 +8,8 @@ import {
   FaRedo,
 } from "react-icons/fa";
 import { sendMessageToGemini } from "../services/geminiService";
-import ChatMessage from "./ChatMessage";
-import ResetButton from "./ResetButton";
+import ChatMessage from "../components/ChatMessage";
+import ResetButton from "../components/ResetButton";
 
 const Card = ({ icon, color, title }) => (
   <div className="bg-white shadow-md rounded-lg p-6 w-64 flex flex-col items-center">
@@ -21,34 +21,43 @@ const Card = ({ icon, color, title }) => (
 const Chatui = () => {
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
-  const [isTyping, setIsTyping] = useState(false); // State untuk mengetik
+  const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
 
-  const handleSend = async () => {
+  // Gunakan useCallback untuk mengoptimalkan handleSend
+  const handleSend = useCallback(async () => {
     if (message.trim()) {
       const userMessage = { text: message, type: "question" };
       setChatHistory((prev) => [...prev, userMessage]);
 
-      // AI typing animation starts here
-      setIsTyping(true);
+      setIsTyping(true); // Animasi mengetik mulai
 
-      const language = /^[A-Za-z0-9\s]+$/.test(message) ? "en" : "id";
-      const result = await sendMessageToGemini(message, language);
+      try {
+        const language = /^[A-Za-z0-9\s]+$/.test(message) ? "en" : "id";
+        const result = await sendMessageToGemini(message, language);
 
-      // AI stops typing animation
-      setIsTyping(false);
-
-      const aiResponse = { text: result.reply || result.error, type: "answer" };
-      setChatHistory((prev) => [...prev, aiResponse]);
+        const aiResponse = {
+          text: result.reply || "Error fetching response.",
+          type: "answer",
+        };
+        setChatHistory((prev) => [...prev, aiResponse]);
+      } catch (error) {
+        setChatHistory((prev) => [
+          ...prev,
+          { text: "Error: Unable to fetch response.", type: "answer" },
+        ]);
+      } finally {
+        setIsTyping(false);
+      }
 
       setMessage("");
     }
-  };
+  }, [message]);
 
   const handleReset = () => {
     setChatHistory([]);
     setMessage("");
-    setIsTyping(false); // Reset typing state
+    setIsTyping(false);
   };
 
   useEffect(() => {
@@ -92,20 +101,11 @@ const Chatui = () => {
       <div className="w-full max-w-2xl mx-auto">
         <div className="bg-white shadow-md rounded-lg p-4 h-96 overflow-y-auto flex flex-col">
           {chatHistory.map((msg, index) => (
-            <div
-              key={index}
-              className={`message-box ${
-                msg.type === "question" ? "question" : "answer"
-              }`}
-            >
+            <React.Fragment key={index}>
               <ChatMessage message={msg.text} type={msg.type} />
-            </div>
+            </React.Fragment>
           ))}
-          {isTyping && (
-            <div className="message-box answer">
-              <div className="typing-animation">...</div>
-            </div>
-          )}
+          {isTyping && <div className="text-gray-400 italic">Typing...</div>}
           <div ref={chatEndRef} />
         </div>
 
