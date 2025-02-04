@@ -1,0 +1,71 @@
+/* Animasi untuk efek mengetik seperti di WhatsApp */
+.typing-animation {
+  display: inline-block;
+  width: 50px;
+  height: 20px;
+  border-radius: 5px;
+  background: #ddd;
+  position: relative;
+}
+
+.typing-animation::before,
+.typing-animation::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #333;
+  animation: typing 1s infinite ease-in-out;
+}
+
+.typing-animation::before {
+  left: 0;
+  animation-delay: 0.1s;
+}
+
+.typing-animation::after {
+  left: 20px;
+  animation-delay: 0.3s;
+}
+
+@keyframes typing {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+
+
+/* Style untuk kotak pesan (pertanyaan dan jawaban) */
+.message-box {
+  display: inline-block; /* Membuat kotak menyesuaikan panjang teks */
+  max-width: 70%; /* Maksimal lebar kotak */
+  word-wrap: break-word; /* Memastikan teks panjang terbungkus dalam kotak */
+  padding: 10px 15px;
+  border-radius: 15px;
+  margin: 5px 0;
+  transition: max-width 0.3s ease-in-out; /* Menambahkan animasi agar lebar kotak berubah dengan smooth */
+}
+
+.question {
+  background-color: #e0f7fa; /* Warna kotak untuk pertanyaan */
+  align-self: flex-end; /* Pertanyaan muncul di sebelah kanan */
+}
+
+.answer {
+  background-color: #e8f5e9; /* Warna kotak untuk jawaban */
+  align-self: flex-start; /* Jawaban muncul di sebelah kiri */
+}
+
+/* Responsif: jika layar kecil, buat kotak pesan lebih besar */
+@media (max-width: 767px) {
+  .message-box {
+    max-width: 90%; /* Lebar kotak lebih besar pada layar kecil */
+  }
+}
